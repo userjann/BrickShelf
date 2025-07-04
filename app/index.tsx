@@ -37,7 +37,7 @@ export default function Index() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
-      <Text style={styles.mainText}>Gespeicherte LEGO Sets</Text>
+      <Text style={styles.mainText}>LEGO Sets</Text>
 
       <FlatList
         data={scannedSets}

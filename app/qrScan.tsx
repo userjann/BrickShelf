@@ -1,8 +1,10 @@
 import { saveSet } from "@/utils/storage";
 import { CameraView } from "expo-camera";
 import Constants from "expo-constants";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { LightSensor } from "expo-sensors";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +20,7 @@ import {
 } from "react-native";
 
 const { BRICKSET_API_KEY } = Constants.expoConfig?.extra || {};
+const TORCH_THRESHOLD = 100;
 
 export default function qrScan() {
   const [loading, setLoading] = useState(false);
@@ -25,6 +28,21 @@ export default function qrScan() {
   const [bricksetData, setBricksetData] = useState<any | null>(null);
   const [isScanning, setIsScanning] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [illuminance, setIlluminance] = useState(0);
+  const [lightSubscription, setLightSubscription] = useState<any>(null);
+
+  useEffect(() => {
+    LightSensor.setUpdateInterval(1000);
+    const subscription = LightSensor.addListener(({ illuminance }) => {
+      setIlluminance(illuminance);
+    });
+    setLightSubscription(subscription);
+
+    return () => {
+      subscription.remove();
+      setLightSubscription(null);
+    };
+  }, []);
 
   async function fetchSetInfo(barcode: string) {
     setLoading(true);
@@ -34,6 +52,7 @@ export default function qrScan() {
     try {
       const params = encodeURIComponent(JSON.stringify({ query: barcode }));
       const url = `https://brickset.com/api/v3.asmx/getSets?apiKey=${BRICKSET_API_KEY}&userHash=&params=${params}`;
+      console.log("Brickset API URL:", url);
 
       const res = await fetch(url);
       const json = await res.json();
@@ -67,30 +86,35 @@ export default function qrScan() {
   }
 
   async function handleSave() {
-    if (!bricksetData) {
-      Alert.alert("Kein Set zum Speichern ausgewählt");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await saveSet({
-        id: bricksetData.number,
-        name: bricksetData.name,
-        setNumber: bricksetData.number,
-        theme: bricksetData.theme,
-        imageURL: bricksetData.image?.imageURL,
-        pieces: bricksetData.pieces,
-        minifigs: bricksetData.minifigs,
-      });
-      router.replace("/");
-    } catch (e) {
-      Alert.alert("Fehler", "Set konnte nicht gespeichert werden.");
-      console.error(e);
-    } finally {
-      setSaving(false);
-    }
+  if (!bricksetData) {
+    Alert.alert("Kein Set zum Speichern ausgewählt");
+    return;
   }
+
+  setSaving(true);
+  try {
+    await saveSet({
+      id: bricksetData.number,
+      name: bricksetData.name,
+      setNumber: bricksetData.number,
+      theme: bricksetData.theme,
+      imageURL: bricksetData.image?.imageURL,
+      pieces: bricksetData.pieces,
+      minifigs: bricksetData.minifigs,
+    });
+
+
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+
+    router.replace("/");
+  } catch (e) {
+    Alert.alert("Fehler", "Set konnte nicht gespeichert werden.");
+    console.error(e);
+  } finally {
+    setSaving(false);
+  }
+}
 
   return (
     <SafeAreaView style={styles.container}>
@@ -100,6 +124,7 @@ export default function qrScan() {
         <CameraView
           style={styles.camera}
           facing="back"
+          enableTorch={illuminance < TORCH_THRESHOLD}
           barcodeScannerSettings={{
             barcodeTypes: ["qr", "ean13", "code39", "code128"],
           }}
@@ -112,7 +137,6 @@ export default function qrScan() {
 
         {!loading && bricksetData && (
           <View style={styles.resultContainer}>
-            {/* Name fett und groß ganz oben */}
             <Text style={styles.title}>{bricksetData.name}</Text>
 
             {bricksetData.image?.imageURL && (
@@ -168,6 +192,15 @@ export default function qrScan() {
             🔄 Erneut scannen
           </Text>
         )}
+
+        <View style={{ marginTop: 20 }}>
+          <Text>
+            Aktuelle Helligkeit:{" "}
+            {Platform.OS === "android"
+              ? `${illuminance.toFixed(1)} lx`
+              : "Nur Android unterstützt den Lichtsensor"}
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

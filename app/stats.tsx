@@ -2,6 +2,8 @@ import { getSavedSets } from "@/utils/storage"; // deine Funktion, um Sets aus S
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { PieChart } from 'react-native-svg-charts';
+
 interface LegoSet {
   id: string;
   name: string;
@@ -45,7 +47,19 @@ export default function Stats() {
     loadSets();
   }, []);
 
-  // Prozentwerte berechnen
+  // Farben für das PieChart (kannst du anpassen)
+  const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8A2BE2', '#00CED1'];
+
+  // PieChart-Daten aus themeDistribution aufbauen
+  const pieData = Object.entries(themeDistribution).map(([theme, count], index) => ({
+    key: theme,
+    value: count,
+    svg: { fill: colors[index % colors.length] },
+    arc: { outerRadius: '100%', cornerRadius: 5 },
+    label: `${theme} (${((count / totalSets) * 100).toFixed(1)}%)`,
+  }));
+
+  // Textuelle Anzeige der Themenstatistiken (unten)
   function renderThemeStats() {
     return Object.entries(themeDistribution).map(([theme, count]) => {
       const percent = totalSets > 0 ? ((count / totalSets) * 100).toFixed(1) : "0";
@@ -56,6 +70,16 @@ export default function Stats() {
         </View>
       );
     });
+  }
+
+  // Kleine Legende zum PieChart
+  function renderLegend() {
+    return pieData.map(item => (
+      <View key={item.key} style={styles.legendItem}>
+        <View style={[styles.legendColorBox, { backgroundColor: item.svg.fill }]} />
+        <Text>{item.label}</Text>
+      </View>
+    ));
   }
 
   return (
@@ -78,6 +102,23 @@ export default function Stats() {
       </View>
 
       <Text style={[styles.title, { marginTop: 30 }]}>Verteilung nach Themen</Text>
+
+      {/* Kreisdiagramm */}
+      <View style={{ height: 200, marginBottom: 10 }}>
+        <PieChart
+          style={{ flex: 1 }}
+          data={pieData}
+          innerRadius={20}
+          outerRadius={'95%'}
+        />
+      </View>
+
+      {/* Legende unter dem Diagramm */}
+      <View style={styles.legendContainer}>
+        {renderLegend()}
+      </View>
+
+      {/* Optional: zusätzlich die Textliste */}
       {renderThemeStats()}
     </ScrollView>
   );
@@ -113,5 +154,19 @@ const styles = StyleSheet.create({
   },
   themeName: {
     fontWeight: "500",
+  },
+  legendContainer: {
+    marginBottom: 20,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  legendColorBox: {
+    width: 16,
+    height: 16,
+    marginRight: 8,
+    borderRadius: 4,
   },
 });

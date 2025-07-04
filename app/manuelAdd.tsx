@@ -1,5 +1,6 @@
 import { saveSet } from "@/utils/storage";
 import Constants from 'expo-constants';
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, Image, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -72,6 +73,9 @@ export default function ManualAdd() {
         pieces: pieces ?? undefined,
         minifigs: minifigs ?? undefined,
       });
+
+       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
 
       router.replace("/");
     } catch {
