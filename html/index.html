@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrickShelf – Deine LEGO® Sammlung verwalten</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #f0f0f0; /* Heller Hintergrund wie im App Store */
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px; /* Ähnlich wie die Breite auf der Store-Seite */
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden; /* Für saubere Ränder bei Bildern */
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+        .app-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 18px; /* Abgerundete Ecken, wie bei App-Icons */
+            margin-right: 20px;
+            object-fit: cover; /* Stellt sicher, dass das Bild passt */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .app-info {
+            flex-grow: 1;
+        }
+        .app-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 5px;
+        }
+        .app-tagline {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .rating {
+            font-size: 14px;
+            color: #777;
+            display: flex;
+            align-items: center;
+        }
+        .stars {
+            color: #FFD700; /* Goldfarbe für Sterne */
+            margin-right: 5px;
+            letter-spacing: 1px;
+            font-size: 18px;
+        }
+        .download-button {
+            background-color: #007bff; /* Typische App-Store-Button-Farbe */
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 16px;
+            white-space: nowrap; /* Button-Text bleibt in einer Zeile */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.2s ease;
+        }
+        .download-button:hover {
+            background-color: #0056b3;
+        }
+        .meta-info {
+            padding: 10px 20px;
+            font-size: 13px;
+            color: #666;
+            border-bottom: 1px solid #eee;
+        }
+        .meta-info p {
+            margin: 5px 0;
+        }
+        .meta-info a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .screenshots {
+            display: flex;
+            overflow-x: auto; /* Ermöglicht horizontales Scrollen */
+            padding: 20px 0;
+            scroll-snap-type: x mandatory; /* Für glatteres Scrollen */
+            -webkit-overflow-scrolling: touch; /* Für iOS */
+            gap: 15px; /* Abstand zwischen den Screenshots */
+        }
+        .screenshot-item {
+            flex-shrink: 0; /* Verhindert das Schrumpfen der Bilder */
+            width: 200px; /* Feste Breite für Screenshots */
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            scroll-snap-align: start; /* Screenshots rasten beim Scrollen ein */
+            margin-left: 20px; /* Nur für den ersten Screenshot, um Padding zu simulieren */
+        }
+        .screenshot-item:last-child {
+            margin-right: 20px; /* Padding für den letzten Screenshot */
+        }
+        .screenshot-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .description {
+            padding: 20px;
+            font-size: 15px;
+            color: #444;
+        }
+        .description h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #222;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        .description ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .description ul li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 8px;
+        }
+        .description ul li::before {
+            content: '✓'; /* Haken-Symbol */
+            color: #28a745; /* Grün für Haken */
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        .download-section {
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+        .download-section h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 25px;
+        }
+        .store-badges {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap; /* Erlaubt Umbruch auf kleineren Bildschirmen */
+        }
+        .store-badge img {
+            height: 50px; /* Standardhöhe für App Store Badges */
+            width: auto;
+            vertical-align: middle;
+        }
+
+        /* Responsive Anpassungen */
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+                align-items: center;
+            }
+            .app-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            .app-info {
+                text-align: center;
+            }
+            .download-button {
+                margin-top: 15px;
+            }
+            .screenshots {
+                padding-left: 20px; /* Start-Padding für Screenshots */
+                padding-right: 20px; /* End-Padding für Screenshots */
+            }
+            .screenshot-item {
+                width: 180px; /* Etwas kleiner auf Mobilgeräten */
+                margin-left: 0; /* Wird durch Gap ersetzt */
+            }
+            .screenshot-item:first-child {
+                 margin-left: 0; /* Behebt das spezifische Margin-Left */
+            }
+             .screenshot-item:last-child {
+                margin-right: 0; /* Behebt das spezifische Margin-Right */
+            }
+            .store-badges {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="img/icon.png" alt="BrickShelf App Icon" class="app-icon">
+            <div class="app-info">
+                <h1 class="app-name">BrickShelf</h1>
+                <p class="app-tagline">Entdecke, scanne und verwalte deine LEGO® Sammlung!</p>
+                <div class="rating">
+                    <span class="stars">★★★★★</span> (5 - 148'245'072'529 Bewertungen) </div>
+            </div>
+            <a href="LINK_ZUM_APP_STORE_ODER_PLAY_STORE" class="download-button">Herunterladen</a>
+        </div>
+
+        <div class="meta-info">
+            <p>Bietet keine In-App-Käufe</p>
+            <p>Diese App ist mit Ihrer Familie kompatibel. <a href="#">Weitere Informationen zur Familienmediathek.</a></p>
+            <p>PEGI 3</p>
+        </div>
+
+        <div class="screenshots">
+            <div class="screenshot-item">
+                <img src="img/s4.jpeg" alt="Screenshot 1: Hauptansicht mit Sets">
+            </div>
+            <div class="screenshot-item">
+                <img src="img/s3.jpeg" alt="Screenshot 2: Barcode Scan-Bildschirm">
+            </div>
+            <div class="screenshot-item">
+                <img src="img/s1.jpeg" alt="Screenshot 3: Set-Details">
+            </div>
+            <div class="screenshot-item">
+                <img src="img/s2.jpeg" alt="Screenshot 4: Statistiken">
+            </div>
+            </div>
+
+        <div class="description">
+            <p>Bereit, deine LEGO® Sammlung auf das nächste Level zu heben? Mit <strong>BrickShelf</strong> wird das Verwalten deiner Sets so einfach und intuitiv wie nie zuvor. Scanne Barcodes, füge Sets manuell hinzu und behalte den Überblick über deine gesamte Sammlung – alles in einer eleganten App, die perfekt in deine Hosentasche passt.</p>
+
+            <h3>Was bietet dir BrickShelf?</h3>
+            <ul>
+                <li>Scanne deine Sets im Handumdrehen: Mit der integrierten Barcode-Scanfunktion fügst du neue LEGO® Sets einfach durch das Scannen des Barcodes hinzu. Die App erkennt das Set automatisch und ruft alle relevanten Informationen ab.</li>
+                <li>Manuelles Hinzufügen leicht gemacht: Keine Lust auf Scannen oder der Barcode ist unleserlich? Gib einfach die Setnummer ein und BrickShelf findet alle Details für dich.</li>
+                <li>Deine Sammlung auf einen Blick: Sieh alle deine gesammelten LEGO® Sets übersichtlich in einer Liste. Tippe auf ein Set, um detaillierte Informationen wie den Namen, die Setnummer, das Thema, die Anzahl der Teile und Minifiguren anzuzeigen.</li>
+                <li>Umfassende Statistiken: Erhalte spannende Einblicke in deine Sammlung! BrickShelf zeigt dir die Gesamtzahl deiner Sets, Teile und Minifiguren. Eine grafische Übersicht visualisiert zudem die Verteilung deiner Sets nach Themen.</li>
+                <li>Immer auf dem neuesten Stand: Die App greift auf die umfangreiche Brickset-API zu, um dir stets aktuelle und genaue Informationen zu deinen LEGO® Sets zu liefern.</li>
+            </ul>
+
+            <h3>Warum BrickShelf?</h3>
+            <ul>
+                <li>Intuitiv & Benutzerfreundlich: Eine klare und moderne Oberfläche macht die Verwaltung deiner Sammlung zum Vergnügen.</li>
+                <li>Alle Details immer dabei: Nie wieder rätseln, wie viele Minifiguren in einem Set sind oder zu welchem Thema es gehört.</li>
+                <li>Ordnung im Chaos: Halte deine wachsende LEGO® Sammlung organisiert und verliere nie den Überblick.</li>
+                <li>Kostenlos & Werbefrei: Konzentriere dich auf das Wesentliche – deine LEGO® Leidenschaft!</li>
+            </ul>
+        </div>
+
+        <div class="download-section">
+            <h3>Mach den ersten Schritt zu deiner digitalen LEGO® Sammlung!</h3>
+            <p>Lade BrickShelf jetzt kostenlos herunter und beginne, deine Sets zu katalogisieren. Deine Sammlung war noch nie so gut organisiert!</p>
+            
+        </div>
+    </div>
+</body>
+</html>
