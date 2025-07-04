@@ -1,9 +1,10 @@
 import { getSavedSets, LegoSet } from '@/utils/storage';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, SafeAreaView, StyleSheet, Text } from 'react-native';
+import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -23,28 +24,42 @@ export default function Index() {
     <Pressable
       style={({ pressed }) => [
         styles.setItem,
-        pressed && { backgroundColor: '#e6f0ff' },
+        pressed && { backgroundColor: '#EBF6FF' },
       ]}
       onPress={() => router.push(`/setDetail?id=${item.id}`)}
     >
-      <Text style={styles.setTitle}>{item.name}</Text>
-      <Text style={styles.setInfo}>
-        {item.setNumber} – {item.theme}
-      </Text>
+      <View style={styles.setItemContent}>
+        <Text style={styles.setTitle}>{item.name}</Text>
+        <Text style={styles.setInfo}>
+          {item.setNumber} – {item.theme}
+        </Text>
+      </View>
     </Pressable>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="auto" />
-      <Text style={styles.mainText}>LEGO Sets</Text>
+      <StatusBar style="dark" />
+      
+      <View style={styles.header}>
+        <Text style={styles.mainText}>Deine LEGO Sammlung</Text>
+      </View>
 
       <FlatList
         data={scannedSets}
         keyExtractor={item => item.id}
         renderItem={renderSetItem}
-        ListEmptyComponent={<Text style={styles.emptyText}>Keine gespeicherten Sets.</Text>}
-        contentContainerStyle={scannedSets.length === 0 && { flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <FontAwesome5 name="box-open" size={60} color="#B0B0B0" />
+            <Text style={styles.emptyText}>Noch keine Sets in deiner Sammlung.</Text>
+            <Text style={styles.emptyTextSub}>Scanne dein erstes Set!</Text>
+          </View>
+        }
+        contentContainerStyle={[
+          scannedSets.length === 0 ? styles.emptyListContent : {},
+          { paddingBottom: 100 }
+        ]}
         style={{ width: '100%', flex: 1, marginTop: 20 }}
       />
 
@@ -52,7 +67,7 @@ export default function Index() {
         <Pressable
           style={({ pressed }) => [
             styles.permissionButton,
-            pressed && { backgroundColor: '#0aa742' },
+            pressed && { backgroundColor: '#008C00' },
           ]}
           onPress={requestPermission}
         >
@@ -63,23 +78,24 @@ export default function Index() {
       <Pressable
         style={({ pressed }) => [
           styles.addButton,
-          pressed && { backgroundColor: '#005bbb' },
-          !isPermissionGranted && { backgroundColor: '#999' },
+          pressed && { backgroundColor: '#004A8C' },
+          !isPermissionGranted && { backgroundColor: '#A0A0A0' },
         ]}
         onPress={() => router.replace('./addSet')}
         disabled={!isPermissionGranted}
       >
+        {/* Hier wurde das MaterialIcons-Kamera-Icon durch ein Text-Plus ersetzt */}
         <Text style={styles.addButtonText}>＋</Text>
       </Pressable>
 
       <Pressable
         style={({ pressed }) => [
           styles.statsButton,
-          pressed && { backgroundColor: '#cc7a00' },
+          pressed && { backgroundColor: '#CC6600' },
         ]}
         onPress={() => router.push('/stats')}
       >
-        <Text style={styles.statsButtonText}>📊</Text>
+        <FontAwesome5 name="chart-bar" size={28} color="#FFF" />
       </Pressable>
     </SafeAreaView>
   );
@@ -88,46 +104,74 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#FDFDFD',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 15,
   },
+  header: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   mainText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#222',
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#222222',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#888',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  emptyTextSub: {
+    fontSize: 16,
+    color: '#A0A0A0',
+    marginTop: 5,
+    textAlign: 'center',
+  },
+  emptyListContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   setItem: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 16,
-    marginVertical: 8,
+    marginVertical: 7,
     borderRadius: 10,
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    width: '100%',
+  },
+  setItemContent: {
+    // Nimmt gesamten Platz ein, da kein Bild
   },
   setTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#333333',
   },
   setInfo: {
     fontSize: 14,
-    color: '#666',
+    color: '#666666',
     marginTop: 4,
   },
   addButton: {
     position: 'absolute',
     bottom: 30,
     alignSelf: 'center',
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0057A6',
     width: 64,
     height: 64,
     borderRadius: 32,
@@ -139,16 +183,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
   },
-  addButtonText: {
-    fontSize: 36,
+  // Der Text-Stil für das Plus-Symbol wurde angepasst
+  addButtonText: { 
+    fontSize: 40, // Größere Schriftgröße für das Plus
     color: '#fff',
-    lineHeight: 38,
+    lineHeight: 40, // Anpassen für vertikale Zentrierung des Plus
   },
   permissionButton: {
     position: 'absolute',
     bottom: 30,
     left: 20,
-    backgroundColor: '#0BCD4C',
+    backgroundColor: '#00A800',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 25,
@@ -167,7 +212,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 20,
-    backgroundColor: '#FF9500',
+    backgroundColor: '#FF8800',
     width: 64,
     height: 64,
     borderRadius: 32,
@@ -178,9 +223,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
-  },
-  statsButtonText: {
-    fontSize: 30,
-    color: '#fff',
   },
 });
